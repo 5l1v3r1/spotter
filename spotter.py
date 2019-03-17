@@ -7,6 +7,10 @@ from base.obfuscator import Obfuscator
 from base.psh import pshTemplate
 from base.csi import csInjectorTemplate
 
+if sys.version_info < (3, 0):
+    sys.stdout.write("[-] Please use Python 3.x\n")
+    sys.exit(1)
+
 banner = """
                  _   _            
                 | | | |           
