@@ -34,6 +34,7 @@ parser_ps.add_argument('--joined', '-j', action="store_true", help='Check that m
 parser_ps.add_argument('--mac', '-m', help='First 3 octets of the target MAC address (OUI) (format: 00:11:22)')
 parser_ps.add_argument('--timezone', '-tz', help='System timezone (format: UTC-7, UTC+2)')
 parser_ps.add_argument('--username', '-u', help='Username of user')
+parser_ps.add_argument('--driveserial', '-sn', help='C: drive serial number')
 # Arguments to handle payload execution
 parser_ps.add_argument('--payload', '-x', help='Command to run')
 parser_ps.add_argument('--payload_file', help='File containing payload to run')
@@ -87,7 +88,9 @@ try:
         if args.username:
             key = args.username
             query = "((Get-WmiObject -Class Win32_ComputerSystem).username).split('\\')[1]"
-            query = "((Get-WmiObject -Class Win32_ComputerSystem).username).split('\\')[1]"
+        if args.driveserial
+            key = args.driveserial
+            query = "(Get-WmiObject win32_physicalmedia | ft SerialNumber -HideTableHeaders | Select -First 3 | Out-String).Trim()"
 
         # Figure out payload
         if args.payload:
