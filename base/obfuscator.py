@@ -8,6 +8,7 @@ class Obfuscator:
         return (newVar)
 
     def varobfs(self):
+        hWindow = self.obfVar()
         varKey = self.obfVar()
         varCtr = self.obfVar()
         varBytes = self.obfVar()
@@ -22,4 +23,4 @@ class Obfuscator:
         b = self.obfVar()
         c = self.obfVar()
         d = self.obfVar()
-        return varKey, varCtr, varBytes, varAesManaged, varencryptedStringWithIV, varUnencryptedData, varDecryptor, varLauncher, funcCreateAesManagedObject, funcDecryptString, a, b, c, d
+        return hWindow, varKey, varCtr, varBytes, varAesManaged, varencryptedStringWithIV, varUnencryptedData, varDecryptor, varLauncher, funcCreateAesManagedObject, funcDecryptString, a, b, c, d

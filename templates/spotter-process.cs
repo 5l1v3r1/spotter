@@ -36,8 +36,7 @@ namespace SpotterCSharp
         }
         private static string GetEnvKey()
         {
-            //This is the query we'll need to replace at generation
-            string envKey = KEYCHECK;
+            KEYCHECK;
             if (32 <= envKey.Length) envKey = envKey.Substring(0, 32);
             while (envKey.Length * 2 <= 32)
             {
