@@ -4,7 +4,7 @@ Spotter is a tool to wrap payloads in environmentally-keyed, AES256-encrypted la
 
 ![spotter](https://media.defense.gov/2011/Jul/28/2000234038/-1/-1/0/110727-F-OK556-004.JPG)
 
-## Use:
+## Usage:
 ```
 python3 spotter.py --help
 usage: spotter.py [-h] {ps,cs-process,cs-inject} ...
