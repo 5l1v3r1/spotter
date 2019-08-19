@@ -47,6 +47,8 @@ parser_cs_ps.add_argument('--domain', '-d', help='Domain name to check for')
 parser_cs_ps.add_argument('--user', '-u', help='User name to check for')
 parser_cs_ps.add_argument('--computer', '-c', help='Computer name to check for')
 parser_cs_ps.add_argument('--timezone', '-tz', help='System timezone (format: UTC-05, UTC+02')
+parser_cs_ps.add_argument('--driveserial', '-sn', help='C: drive serial number')
+parser_cs_ps.add_argument('--volumeserial', '-vsn', help='C: drive volume serial number')
 parser_cs_ps.add_argument('--payload', '-x', help='Command to run')
 parser_cs_ps.add_argument('--payload_file', help='File containing payload to run')
 
@@ -57,6 +59,7 @@ parser_cs_inj.add_argument('--user', '-u', help='User name to check for')
 parser_cs_inj.add_argument('--computer', '-c', help='Computer name to check for')
 parser_cs_inj.add_argument('--timezone', '-tz', help='System timezone (format: UTC-05, UTC+02')
 parser_cs_inj.add_argument('--driveserial', '-sn', help='C: drive serial number')
+parser_cs_inj.add_argument('--volumeserial', '-vsn', help='C: drive volume serial number')
 parser_cs_inj.add_argument('--payload_file', help='DLL/EXE to be loaded on decryption')
 
 # Parse  argument lists
@@ -127,6 +130,8 @@ try:
             key = args.computer
         elif args.driveserial:
             key = args.driveserial
+        elif args.volumeserial:
+            key = args.volumeserial
         csInjectorTemplate = csInjectorTemplate()
         encoded = csInjectorTemplate.csiPayload(args.payload_file)
         #Encrypt the provided PECOFF payload
@@ -149,6 +154,11 @@ try:
             check = "string "+envKey+" = \"\";\n\t\t\t"
             check += "ManagementObjectSearcher "+moSearcher+" = new ManagementObjectSearcher(\"SELECT * FROM Win32_DiskDrive\");\n\t\t\t"
             check += "foreach (ManagementObject "+wmi_HD+" in "+moSearcher+".Get()){"+envKey+" = "+wmi_HD+"[\"SerialNumber\"].ToString().Trim();break;}"
+        elif args.volumeserial:
+            moSearcher = Obfuscator.obfVar()
+            wmi_HD = Obfuscator.obfVar()
+            check = "string "+envKey+" = \"\";\n\t\t\tManagementObjectSearcher "+moSearcher+" = new ManagementObjectSearcher(\"SELECT * FROM Win32_LogicalDisk\");\n\t\t\t"
+            check += "foreach (ManagementObject "+wmi_HD+" in "+moSearcher+".Get()){"+envKey+" = "+wmi_HD+"[\"VolumeSerialNumber\"].ToString().Insert(4,\"-\").Trim();break;};"
         # Replace original variable and function names with obfuscated ones
         with open("templates/spotter-inject.cs", "rt") as fin:
             r1 = fin.read().replace('encDllB64', encDllB64)
@@ -181,6 +191,10 @@ try:
             key = args.user
         elif args.computer:
             key = args.computer
+        elif args.driveserial:
+            key = args.driveserial
+        elif args.volumeserial:
+            key = args.volumeserial
         if args.payload:
             payload = args.payload
         elif args.payload_file:
@@ -203,8 +217,13 @@ try:
         elif args.driveserial:
             moSearcher = Obfuscator.obfVar()
             wmi_HD = Obfuscator.obfVar()
-            check = "string "+envKey+" = '';\nManagementObjectSearcher "+moSearcher+" = new ManagementObjectSearcher('SELECT * FROM Win32_DiskDrive');\n"
-            check += "foreach (ManagementObject "+wmi_HD+" in "+moSearcher+".Get()){"+envKey+" = "+wmi_HD+"['SerialNumber'].ToString().Trim();break;};"
+            check = "string "+envKey+" = \"\";\nManagementObjectSearcher "+moSearcher+" = new ManagementObjectSearcher('SELECT * FROM Win32_DiskDrive');\n"
+            check += "foreach (ManagementObject "+wmi_HD+" in "+moSearcher+".Get()){"+envKey+" = "+wmi_HD+"[\"SerialNumber\"].ToString().Trim();break;};"
+        elif args.volumeserial:
+            moSearcher = Obfuscator.obfVar()
+            wmi_HD = Obfuscator.obfVar()
+            check = "string "+envKey+" = \"\";\n\t\t\tManagementObjectSearcher "+moSearcher+" = new ManagementObjectSearcher(\"SELECT * FROM Win32_LogicalDisk\");\n\t\t\t"
+            check += "foreach (ManagementObject "+wmi_HD+" in "+moSearcher+".Get()){"+envKey+" = "+wmi_HD+"[\"VolumeSerialNumber\"].ToString().Insert(4,\"-\").Trim();break;};"
         #print(encrypted)
         with open("templates/spotter-process.cs", "rt") as fin:
             r1 = fin.read().replace('ENCODED_COMMAND', encrypted)
