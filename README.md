@@ -24,7 +24,7 @@ optional arguments:
 ```
 PowerShell Example:
 ```
-python3 spotter.py ps --payload_file payload.txt --outfile spotter.ps1 --domain ACME.CORP --osver win7 --vm --ip 192.168.82
+python3 spotter.py ps --payload_file payload.txt --outfile spotter.ps1 --domain ACME.CORP
 ```
 C# Process Creation:
 ```
