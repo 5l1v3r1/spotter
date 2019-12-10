@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 
 class pshTemplate:
-    def pshTemplate(self, encrypted, varKey, varCtr, varBytes, varAesManaged, varencryptedStringWithIV, varUnencryptedData, varDecryptor, varLauncher, funcCreateAesManagedObject, funcDecryptString, query, asmi, exitcmd):
+    def pshTemplate(self, encrypted, varKey, varCtr, varBytes, varAesManaged, varencryptedStringWithIV, varUnencryptedData, varDecryptor, varLauncher, funcCreateAesManagedObject, funcDecryptString, query, amsi, exitcmd):
         # Get the initial key value
         setKey = varKey + " = (" + query + ");"
         # Repeat that key until it is over 32 bytes long
